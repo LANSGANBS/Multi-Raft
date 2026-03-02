@@ -41,31 +41,78 @@ src/
 package main
 
 import (
-    "github.com/LANSGANBS/Multi-Raft/src/raft"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/LANSGANBS/Multi-Raft/src/raft"
 )
 
 func main() {
-    storage, _ := raft.NewBadgerRaftStorage("/data/raft-node-0")
-    defer storage.Close()
+	// Create persistent storage
+	storage, err := raft.NewBadgerRaftStorage("/tmp/raft-node-0")
+	if err != nil {
+		panic(err)
+	}
+	defer storage.Close()
 
-    transport := raft.NewGrpcTransport(&raft.TransportConfig{
-        Peers:      []string{"localhost:50051", "localhost:50052", "localhost:50053"},
-        PeerID:     0,
-        ListenAddr: "localhost:50051",
-    })
+	// Create gRPC transport
+	transport := raft.NewGrpcTransport(&raft.TransportConfig{
+		Peers:      []string{"localhost:50051", "localhost:50052", "localhost:50053"},
+		PeerID:     0,
+		ListenAddr: "localhost:50051",
+	})
 
-    applyCh := make(chan raft.ApplyMsg, 100)
-    config := raft.DefaultConfig()
-    node := raft.NewNode(config, transport, storage, applyCh)
+	// Create apply channel
+	applyCh := make(chan raft.ApplyMsg, 100)
 
-    transport.Start()
-    defer node.Stop()
+	// Create Raft node
+	config := raft.DefaultConfig()
+	node := raft.NewNode(config, transport, storage, applyCh)
 
-    for msg := range applyCh {
-        if msg.CommandValid {
-            applyToStateMachine(msg.Command)
-        }
-    }
+	// Start transport
+	if err := transport.Start(); err != nil {
+		panic(err)
+	}
+	defer node.Stop()
+
+	// Handle applied messages in a separate goroutine
+	go func() {
+		for msg := range applyCh {
+			if msg.CommandValid {
+				// Apply command to your state machine here
+				fmt.Printf("Applied command at index %d: %v\n", msg.CommandIndex, msg.Command)
+			} else if msg.SnapshotValid {
+				// Apply snapshot to your state machine here
+				fmt.Printf("Applied snapshot at index %d\n", msg.SnapshotIndex)
+			}
+		}
+	}()
+
+	// Submit commands (leader only)
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			if term, isLeader := node.GetState(); isLeader {
+				cmd := fmt.Sprintf("command-%d", time.Now().UnixNano())
+				index, term, ok := node.Start(cmd)
+				if ok {
+					fmt.Printf("Submitted command at index %d, term %d\n", index, term)
+				}
+			} else {
+				fmt.Printf("Follower in term %d\n", term)
+			}
+		}
+	}()
+
+	// Wait for interrupt signal
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	<-sigCh
+	fmt.Println("\nShutting down...")
 }
 ```
 
@@ -122,31 +169,78 @@ src/
 package main
 
 import (
-    "github.com/LANSGANBS/Multi-Raft/src/raft"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/LANSGANBS/Multi-Raft/src/raft"
 )
 
 func main() {
-    storage, _ := raft.NewBadgerRaftStorage("/data/raft-node-0")
-    defer storage.Close()
+	// 创建持久化存储
+	storage, err := raft.NewBadgerRaftStorage("/tmp/raft-node-0")
+	if err != nil {
+		panic(err)
+	}
+	defer storage.Close()
 
-    transport := raft.NewGrpcTransport(&raft.TransportConfig{
-        Peers:      []string{"localhost:50051", "localhost:50052", "localhost:50053"},
-        PeerID:     0,
-        ListenAddr: "localhost:50051",
-    })
+	// 创建 gRPC 传输层
+	transport := raft.NewGrpcTransport(&raft.TransportConfig{
+		Peers:      []string{"localhost:50051", "localhost:50052", "localhost:50053"},
+		PeerID:     0,
+		ListenAddr: "localhost:50051",
+	})
 
-    applyCh := make(chan raft.ApplyMsg, 100)
-    config := raft.DefaultConfig()
-    node := raft.NewNode(config, transport, storage, applyCh)
+	// 创建应用通道
+	applyCh := make(chan raft.ApplyMsg, 100)
 
-    transport.Start()
-    defer node.Stop()
+	// 创建 Raft 节点
+	config := raft.DefaultConfig()
+	node := raft.NewNode(config, transport, storage, applyCh)
 
-    for msg := range applyCh {
-        if msg.CommandValid {
-            applyToStateMachine(msg.Command)
-        }
-    }
+	// 启动传输层
+	if err := transport.Start(); err != nil {
+		panic(err)
+	}
+	defer node.Stop()
+
+	// 在单独的 goroutine 中处理已提交的消息
+	go func() {
+		for msg := range applyCh {
+			if msg.CommandValid {
+				// 在这里将命令应用到你的状态机
+				fmt.Printf("应用命令到索引 %d: %v\n", msg.CommandIndex, msg.Command)
+			} else if msg.SnapshotValid {
+				// 在这里将快照应用到你的状态机
+				fmt.Printf("应用快照到索引 %d\n", msg.SnapshotIndex)
+			}
+		}
+	}()
+
+	// 提交命令（仅领导者有效）
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			if term, isLeader := node.GetState(); isLeader {
+				cmd := fmt.Sprintf("command-%d", time.Now().UnixNano())
+				index, term, ok := node.Start(cmd)
+				if ok {
+					fmt.Printf("提交命令到索引 %d, 任期 %d\n", index, term)
+				}
+			} else {
+				fmt.Printf("跟随者，任期 %d\n", term)
+			}
+		}
+	}()
+
+	// 等待中断信号
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	<-sigCh
+	fmt.Println("\n正在关闭...")
 }
 ```
 
