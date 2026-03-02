@@ -2,14 +2,14 @@ package shardkv
 
 import (
 	"bytes"
-	"course/labrpc"
-	"course/shardctrler"
+	"github.com/LANSGANBS/Multi-Raft/src/labrpc"
+	"github.com/LANSGANBS/Multi-Raft/src/shardctrler"
 	"sync/atomic"
 	"time"
 )
-import "course/raft"
+import "github.com/LANSGANBS/Multi-Raft/src/raft"
 import "sync"
-import "course/labgob"
+import "github.com/LANSGANBS/Multi-Raft/src/labgob"
 
 type ShardKV struct {
 	mu           sync.Mutex

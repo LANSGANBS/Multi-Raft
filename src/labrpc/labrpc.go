@@ -51,7 +51,7 @@ package labrpc
 
 import (
 	"bytes"
-	"course/labgob"
+	"github.com/LANSGANBS/Multi-Raft/src/labgob"
 	"log"
 	"math/rand"
 	"reflect"

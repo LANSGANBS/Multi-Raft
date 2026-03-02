@@ -1,7 +1,7 @@
 package raft
 
 import (
-	"course/labgob"
+	"github.com/LANSGANBS/Multi-Raft/src/labgob"
 	"fmt"
 )
 
@@ -79,6 +79,9 @@ func (rl *RaftLog) at(logicIdx int) LogEntry {
 }
 
 func (rl *RaftLog) last() (index, term int) {
+	if len(rl.tailLog) == 0 {
+		return rl.snapLastIdx, rl.snapLastTerm
+	}
 	i := len(rl.tailLog) - 1
 	return rl.snapLastIdx + i, rl.tailLog[i].Term
 }
@@ -98,7 +101,9 @@ func (rl *RaftLog) tail(startIdx int) []LogEntry {
 	if startIdx >= rl.size() {
 		return nil
 	}
-
+	if startIdx < rl.snapLastIdx {
+		startIdx = rl.snapLastIdx
+	}
 	return rl.tailLog[rl.idx(startIdx):]
 }
 
@@ -130,7 +135,7 @@ func (rl *RaftLog) String() string {
 // snapshot in the index
 // do checkpoint from the app layer
 func (rl *RaftLog) doSnapshot(index int, snapshot []byte) {
-	if index <= rl.snapLastIdx {
+	if index <= rl.snapLastIdx || index >= rl.size() {
 		return
 	}
 
@@ -140,8 +145,7 @@ func (rl *RaftLog) doSnapshot(index int, snapshot []byte) {
 	rl.snapLastTerm = rl.tailLog[idx].Term
 	rl.snapshot = snapshot
 
-	// make a new log array
-	newLog := make([]LogEntry, 0, rl.size()-rl.snapLastIdx)
+	newLog := make([]LogEntry, 0, rl.size()-index)
 	newLog = append(newLog, LogEntry{
 		Term: rl.snapLastTerm,
 	})
@@ -149,16 +153,22 @@ func (rl *RaftLog) doSnapshot(index int, snapshot []byte) {
 	rl.tailLog = newLog
 }
 
-// install snapshot from the raft layer
 func (rl *RaftLog) installSnapshot(index, term int, snapshot []byte) {
+	if index <= rl.snapLastIdx {
+		return
+	}
+	
+	var newTailLog []LogEntry
+	if rl.size() > index+1 {
+		newTailLog = make([]LogEntry, 0, rl.size()-index)
+		newTailLog = append(newTailLog, LogEntry{Term: term})
+		newTailLog = append(newTailLog, rl.tailLog[rl.idx(index)+1:]...)
+	} else {
+		newTailLog = []LogEntry{{Term: term}}
+	}
+	
 	rl.snapLastIdx = index
 	rl.snapLastTerm = term
 	rl.snapshot = snapshot
-
-	// make a new log array
-	newLog := make([]LogEntry, 0, 1)
-	newLog = append(newLog, LogEntry{
-		Term: rl.snapLastTerm,
-	})
-	rl.tailLog = newLog
+	rl.tailLog = newTailLog
 }

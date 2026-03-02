@@ -4,7 +4,7 @@ package shardctrler
 // Shardctrler clerk.
 //
 
-import "course/labrpc"
+import "github.com/LANSGANBS/Multi-Raft/src/labrpc"
 import "crypto/rand"
 import "math/big"
 

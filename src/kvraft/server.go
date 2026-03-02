@@ -2,9 +2,9 @@ package kvraft
 
 import (
 	"bytes"
-	"course/labgob"
-	"course/labrpc"
-	"course/raft"
+	"github.com/LANSGANBS/Multi-Raft/src/labgob"
+	"github.com/LANSGANBS/Multi-Raft/src/labrpc"
+	"github.com/LANSGANBS/Multi-Raft/src/raft"
 	"sync"
 	"sync/atomic"
 	"time"

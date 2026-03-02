@@ -2,7 +2,7 @@ package raft
 
 import (
 	"bytes"
-	"course/labgob"
+	"github.com/LANSGANBS/Multi-Raft/src/labgob"
 	"fmt"
 )
 

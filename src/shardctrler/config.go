@@ -1,7 +1,7 @@
 package shardctrler
 
-import "course/labrpc"
-import "course/raft"
+import "github.com/LANSGANBS/Multi-Raft/src/labrpc"
+import "github.com/LANSGANBS/Multi-Raft/src/raft"
 import "testing"
 import "os"
 

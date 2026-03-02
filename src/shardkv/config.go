@@ -1,7 +1,7 @@
 package shardkv
 
-import "course/shardctrler"
-import "course/labrpc"
+import "github.com/LANSGANBS/Multi-Raft/src/shardctrler"
+import "github.com/LANSGANBS/Multi-Raft/src/labrpc"
 import "testing"
 import "os"
 
@@ -12,7 +12,7 @@ import "math/rand"
 import "encoding/base64"
 import "sync"
 import "runtime"
-import "course/raft"
+import "github.com/LANSGANBS/Multi-Raft/src/raft"
 import "strconv"
 import "fmt"
 import "time"

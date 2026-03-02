@@ -1008,7 +1008,7 @@ func internalChurn(t *testing.T, unreliable bool) {
 	ncli := 3
 	cha := []chan []int{}
 	for i := 0; i < ncli; i++ {
-		cha = append(cha, make(chan []int))
+		cha = append(cha, make(chan []int, 100))
 		go cfn(i, cha[i])
 	}
 

@@ -1,7 +1,7 @@
 package shardkv
 
 import (
-	"course/shardctrler"
+	"github.com/LANSGANBS/Multi-Raft/src/shardctrler"
 	"time"
 )
 

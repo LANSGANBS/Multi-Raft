@@ -1,7 +1,7 @@
 package shardkv
 
-import "course/porcupine"
-import "course/models"
+import "github.com/LANSGANBS/Multi-Raft/src/porcupine"
+import "github.com/LANSGANBS/Multi-Raft/src/models"
 import "testing"
 import "strconv"
 import "time"

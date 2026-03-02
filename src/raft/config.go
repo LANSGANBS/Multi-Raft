@@ -10,8 +10,8 @@ package raft
 
 import (
 	"bytes"
-	"course/labgob"
-	"course/labrpc"
+	"github.com/LANSGANBS/Multi-Raft/src/labgob"
+	"github.com/LANSGANBS/Multi-Raft/src/labrpc"
 	"log"
 	"math/rand"
 	"runtime"
@@ -316,7 +316,7 @@ func (cfg *config) start1(i int, applier func(int, chan ApplyMsg)) {
 
 	cfg.mu.Unlock()
 
-	applyCh := make(chan ApplyMsg)
+	applyCh := make(chan ApplyMsg, 100)
 
 	rf := Make(ends, i, cfg.saved[i], applyCh)
 

@@ -24,8 +24,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	//	"course/labgob"
-	"course/labrpc"
+	//	"github.com/LANSGANBS/Multi-Raft/src/labgob"
+	"github.com/LANSGANBS/Multi-Raft/src/labrpc"
 )
 
 const (

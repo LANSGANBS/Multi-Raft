@@ -1,6 +1,6 @@
 package kvraft
 
-import "course/labrpc"
+import "github.com/LANSGANBS/Multi-Raft/src/labrpc"
 import "testing"
 import "os"
 
@@ -11,7 +11,7 @@ import "math/rand"
 import "encoding/base64"
 import "sync"
 import "runtime"
-import "course/raft"
+import "github.com/LANSGANBS/Multi-Raft/src/raft"
 import "fmt"
 import "time"
 import "sync/atomic"

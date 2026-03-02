@@ -1,6 +1,6 @@
 package models
 
-import "course/porcupine"
+import "github.com/LANSGANBS/Multi-Raft/src/porcupine"
 import "fmt"
 import "sort"
 
